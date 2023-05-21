@@ -71,12 +71,28 @@ def main_timer(func):
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-def call_tclean(channelInputMS, channelNumber, conf):
+def call_tclean(channelInputMS, channelNumber, conf, **kwargs):
     '''
     '''
     info(f"Starting CASA tclean for input files: {channelInputMS}")
     info(f"Setting output filename base to: {conf.input.basename + conf.env.markerChannel + channelNumber}")
     imagename = os.path.join(conf.env.dirImages, conf.input.basename + conf.env.markerChannel + channelNumber)
+
+    for kw in kwargs:
+        if kw in ('vis', 'imagename', 'niter', 'gain', 'deconvolver',
+                  'threshold', 'imsize', 'cell', 'gridder', 'wprojplanes',
+                  'specmode', 'spw', 'uvrange', 'stokes', 'weighting',
+                  'robust', 'pblimit', 'mask', 'usemask', 'restoration',
+                  'restoringbeam'):
+            rslt = kwargs.pop(kw)
+            if kw in ('niter', 'gain', 'deconvolver',
+                      'threshold', 'imsize', 'cell', 'gridder', 'wprojplanes',
+                      'specmode', 'spw', 'uvrange', 'stokes', 'weighting',
+                      'robust', 'pblimit', 'mask', 'usemask', 'restoration',
+                      'restoringbeam'):
+                setattr(conf.input, kw, rslt)
+
+
     casatasks.tclean(
         vis=channelInputMS,
         imagename=imagename,
@@ -99,6 +115,7 @@ def call_tclean(channelInputMS, channelNumber, conf):
         usemask=conf.input.usemask,
         restoration=conf.input.restoration,
         restoringbeam=[conf.input.restoringbeam],
+        **kwargs
     )
     # export to .fits file
     outImageName = ""
@@ -138,7 +155,7 @@ def get_channelNumber_from_slurmArrayTaskId(slurmArrayTaskId, conf):
 #@click.argument('--inputMS', required=False)
 @click.pass_context
 @main_timer
-def main(ctx):
+def main(ctx, **kwargs):
 
     args = DotMap(get_dict_from_click_args(ctx.args))
     info("Scripts arguments: {0}".format(args))
@@ -152,7 +169,7 @@ def main(ctx):
     # casatasks.casalog.setcasalog = conf.env.dirLogs + "cube_split_and_tclean-" + str(args.slurmArrayTaskId) + "-chan" + str(channelNumber) + ".casa"
 
     channelInputMS = glob(f"{conf.env.dirVis}/*{conf.env.markerChannel}{channelNumber}*")
-    call_tclean(channelInputMS, channelNumber, conf)
+    call_tclean(channelInputMS, channelNumber, conf, **kwargs)
 
 
 if __name__ == "__main__":
