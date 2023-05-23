@@ -218,6 +218,7 @@ def get_std_via_mad(npArray, axis=None):
 
 
 def get_firstFreq(conf):
+    print(f"Frequency ranges: {conf.input.freqRanges}")
     firstFreq = float(conf.input.freqRanges[0].split("-")[0]) * 1e6
     return firstFreq
 

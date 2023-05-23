@@ -139,6 +139,12 @@ def get_channelNumber_from_slurmArrayTaskId(slurmArrayTaskId, conf):
     '''
     channelNoList = []
     listing = glob(f"{conf.env.dirVis}/*{conf.env.markerChannel}*")
+    info(f"listing: {listing}")
+    info(f"conf.env.dirVis: {conf.env.dirVis}")
+    info(f"conf.env.markerChannel: {conf.env.markerChannel}")
+    print("listing:", listing)
+    print("conf.env.dirVis:", conf.env.dirVis)
+    print("conf.env.markerChannel:", conf.env.markerChannel)
     for filepath in listing:
         # TODO: make this more generic, be carful with hard code 3 digits
         startIndex = filepath.find(conf.env.markerChannel) + len(conf.env.markerChannel)
@@ -159,17 +165,25 @@ def main(ctx, **kwargs):
 
     args = DotMap(get_dict_from_click_args(ctx.args))
     info("Scripts arguments: {0}".format(args))
+    print("Scripts arguments: {0}".format(args))
+    print()
 
     conf = get_config_in_dot_notation(templateFilename=FILEPATH_CONFIG_TEMPLATE, configFilename=FILEPATH_CONFIG_USER)
     info("Scripts config: {0}".format(conf))
+    print("Scripts config: {0}".format(conf))
+    print()
 
     channelNumber = get_channelNumber_from_slurmArrayTaskId(args.slurmArrayTaskId, conf)
+    print("channelNumber: ", channelNumber)
+    print()
 
     # TODO: help: re-definition of casalog not working.
     # casatasks.casalog.setcasalog = conf.env.dirLogs + "cube_split_and_tclean-" + str(args.slurmArrayTaskId) + "-chan" + str(channelNumber) + ".casa"
 
     channelInputMS = glob(f"{conf.env.dirVis}/*{conf.env.markerChannel}{channelNumber}*")
+    print("channelInputMS: ", channelInputMS)
     call_tclean(channelInputMS, channelNumber, conf, **kwargs)
+    print("tclean has been called")
 
 
 if __name__ == "__main__":
